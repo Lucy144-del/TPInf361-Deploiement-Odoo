@@ -107,21 +107,21 @@ Pour les emails transactionnels (factures, réinitialisations de mots de passe) 
 ## 8. Instructions de déploiement
 bash
 
-## 1. Cloner et configurer
-git clone <repository>
-cd odoo-deployment
-cp .env.example .env
+    ## . Cloner et configurer
+        git clone <repository>
+        cd odoo-deployment
+        cp .env.example .env
 # Éditer .env avec vos valeurs
 
-## 2. Démarrer les services
-docker-compose up -d
+    ## . Démarrer les services
+        docker-compose up -d
 
-## 3. Générer le certificat SSL
-docker-compose run --rm certbot
+    ## . Générer le certificat SSL
+        docker-compose run --rm certbot
 
-## 4. Accéder à l'application
-## https://23V2283.system-reso3
-## Utilisateur: admin | Mot de passe: [ODOO_ADMIN_PASSWORD]
+    ## . Accéder à l'application
+        ## https://23V2283.system-reso3
+        ## Utilisateur: admin | Mot de passe: [ODOO_ADMIN_PASSWORD]
 
 ## Commandes utiles :
 bash
