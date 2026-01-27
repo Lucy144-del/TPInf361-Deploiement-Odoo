@@ -1,15 +1,14 @@
 ## Rapport de Déploiement INF3611
-
 ## Étudiant : DJOUTA WAMEGNE LUCIANA
 ## Matricule : 23V2283
 ## Application : Odoo (Business Suite)
 ## URL : https://23V2283.system-reso3
 
-**1. Description de l'application**
+## 1. Description de l'application
 
-Odoo est un Progiciel de Gestion Intégré (ERP) open-source utilisé par les entreprises pour centraliser leurs opérations. Il permet notamment la gestion des ventes, de la comptabilité, des stocks et des ressources humaines au sein d'une plateforme unique et modulaire.
+    Odoo est un Progiciel de Gestion Intégré (ERP) open-source utilisé par les entreprises pour centraliser leurs opérations. Il permet notamment la gestion des ventes, de la comptabilité, des stocks et des ressources humaines au sein d'une plateforme unique et modulaire.
 
-Cas d'usage entreprise : Une PME peut remplacer ses 4-5 logiciels séparés (Excel, Sage, outils de facturation) par Odoo, centralisant toutes ses opérations avec automatisation des flux (commande → facture → stock → comptabilité).
+    Cas d'usage entreprise : Une PME peut remplacer ses 4-5 logiciels séparés (Excel, Sage, outils de facturation) par Odoo, centralisant toutes ses opérations avec automatisation des flux (commande → facture → stock → comptabilité).
 
 ## 2. Architecture des services
 
@@ -31,17 +30,16 @@ text
 ## 3. Structure du projet
 text
 
-```
-odoo/
-├── Capture d'ecrans            # dossier de capture d'ecran de l'interface odoo, en fonctionnement
-│   ├── 1.png
-│   ├── 2.png
-│   └── 3.png
-├── docker-compose.yml          # Définition des services
-├── .env                        # Variables sensibles
-├── nginx.conf                  # Configuration du proxy
-└── README.md                   # Documentation
-```
+    odoo/
+    ├── Capture d'ecrans            # dossier de capture d'ecran de l'interface odoo, en fonctionnement
+    │   ├── 1.png
+    │   ├── 2.png
+    │   └── 3.png
+    ├── docker-compose.yml          # Définition des services
+    ├── .env                        # Variables sensibles
+    ├── nginx.conf                  # Configuration du proxy
+    └── README.md                   # Documentation
+
 
 ## 4. Configuration des variables d'environnement
 
@@ -111,7 +109,7 @@ bash
         git clone <repository>
         cd odoo-deployment
         cp .env.example .env
-# Éditer .env avec vos valeurs
+    ## . Éditer .env avec vos valeurs
 
     ## . Démarrer les services
         docker-compose up -d
@@ -126,9 +124,9 @@ bash
 ## Commandes utiles :
 bash
 
-docker-compose logs -f odoo      # Voir les logs
-docker-compose restart odoo      # Redémarrer Odoo
-docker-compose run --rm certbot renew  # Renouveler certificat
+    docker-compose logs -f odoo      # Voir les logs
+    docker-compose restart odoo      # Redémarrer Odoo
+    docker-compose run --rm certbot renew  # Renouveler certificat
 
 ## 9. Analyse de rentabilité (Business Case)
 Modèles de monétisation :
@@ -179,12 +177,12 @@ Coûts d'exploitation :
 
 ## 10. Validation et tests
 
- HTTPS : Certificat valide, accès sécurisé
- Odoo : Interface accessible, base de données fonctionnelle
- SMTP : Emails envoyés avec succès
- Persistance : Données conservées après redémarrage
- Domaine : Accessible uniquement via https://23V2283.system-reso3
+    HTTPS : Certificat valide, accès sécurisé
+    Odoo : Interface accessible, base de données fonctionnelle
+    SMTP : Emails envoyés avec succès
+    Persistance : Données conservées après redémarrage
+    Domaine : Accessible uniquement via https://23V2283.system-reso3
 
 ## Captures d'écran
 
-Les captures d'écran de l'interface Odoo fonctionnelle sont disponibles dans le dossier `Capture d'ecrans/` 
+    Les captures d'écran de l'interface Odoo fonctionnelle sont disponibles dans le dossier `Capture d'ecrans/` 
