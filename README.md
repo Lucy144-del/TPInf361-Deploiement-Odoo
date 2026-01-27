@@ -31,6 +31,7 @@ text
 ## 3. Structure du projet
 text
 
+```
 odoo/
 ├── Capture d'ecrans            # dossier de capture d'ecran de l'interface odoo, en fonctionnement
 │   ├── 1.png
@@ -40,7 +41,7 @@ odoo/
 ├── .env                        # Variables sensibles
 ├── nginx.conf                  # Configuration du proxy
 └── README.md                   # Documentation
-
+```
 
 ## 4. Configuration des variables d'environnement
 
