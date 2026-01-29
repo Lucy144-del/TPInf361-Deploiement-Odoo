@@ -47,9 +47,8 @@ services:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/nginx/ssl
     ports:
-      # On mappe le port 5880 vers le port 80 de Nginx
-      # Pour le HTTPS, vu que qu'on a qu'un port, on restera sur le 5880
-      - "5880:80" 
+      - "5880:443"  # On envoie le 5880 vers le port SSL (443)
+    #  - "80:80" 
     networks:
       - odoo_network
     restart: unless-stopped
