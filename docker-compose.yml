@@ -67,4 +67,4 @@ services:
 
 networks:
   odoo_network:
-    name: odoo_network_23V2283 # Réseau unique pour ne pas mélanger avec l'autre étudiant
+    driver: bridge
