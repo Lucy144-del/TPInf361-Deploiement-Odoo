@@ -1,135 +1,124 @@
-Rapport de Déploiement INF3611
-Étudiant : DJOUTA WAMEGNE LUCIANA
-Matricule : 23V2283
-Application : Odoo (Business Suite)
-URL : https://23v2283.systeme-res30.app
+Rapport de Déploiement INF3611 - Odoo ERP
+Identification
+
+    Étudiant : DJOUTA WAMEGNE LUCIANA
+
+    Matricule : 23V2283
+
+    Application : Odoo (Business Suite)
+
+    Statut : Opérationnel
+
+    URL : https://23v2283.systeme-res30.app
 
 1. Description de l'application
 
-Odoo est un Progiciel de Gestion Intégré (ERP) open-source utilisé par les entreprises pour centraliser leurs opérations (ventes, comptabilité, stocks, RH).
+Odoo est un Progiciel de Gestion Intégré (ERP) open-source centralisant les opérations critiques d'une entreprise : ventes, comptabilité, stocks et ressources humaines.
 
-Cas d'usage : Automatisation complète du flux métier, de la commande client jusqu'à l'écriture comptable, sur une plateforme unique.
-2. Architecture des services
+Cas d'usage : Transformation digitale d'une PME par l'automatisation des flux métiers (de la commande client à la génération automatique de la facture et de l'écriture comptable).
+2. Architecture des Services
 
-Le déploiement utilise une architecture multi-conteneurs orchestrée par Docker Compose avec un rebond sur le Nginx système du VPS :
-
-    db : PostgreSQL (v15) pour le stockage des données.
-
-    odoo : Serveur d'application (Port interne : 8069).
-
-    nginx (Docker) : Proxy interne facilitant la liaison Docker.
-
-    certbot : Gestionnaire de certificats SSL Let's Encrypt.
-
-    nginx (Système) : Reverse proxy global gérant le masquage du port 5880 et l'accès HTTPS final.
-
-Schéma de communication :
+Le déploiement repose sur une architecture multi-conteneurs isolée, interfacée avec un Reverse Proxy système pour une sécurité maximale.
+Service	Technologie	Rôle
+Database	PostgreSQL 15	Stockage persistant des données métier
+Application	Odoo v17	Logique métier et interface utilisateur
+Proxy Local	Nginx (Docker)	Gestionnaire de flux interne et headers
+Proxy Global	Nginx (Ubuntu)	Terminaison SSL et masquage du port 5880
+SSL	Certbot	Automatisation des certificats Let's Encrypt
+3. Structure du Projet
 Plaintext
 
-[Utilisateur] HTTPS (443) → [Nginx Global] → [Nginx Docker (5880)] → [Odoo (8069)]
-
-3. Structure du projet
-Plaintext
-
-odoo/
-├── Capture d'ecrans/           # Preuves de fonctionnement (.png)
+odoo_deployment/
+├── Capture d'ecrans/           # Preuves formelles de fonctionnement
+│   ├── config_globale.png      # Configuration Nginx du VPS
+│   ├── conteneurs_actifs.png   # État des services Docker
+│   └── interface_odoo.png      # Rendu final en HTTPS
 ├── docker-compose.yml          # Orchestration des services
-├── .env.example                # Modèle des variables (à versionner)
-├── .env                        # Variables réelles (EXCLU du versioning)
-├── .gitignore                  # Exclusion du fichier .env et des données
-├── nginx.conf                  # Configuration du proxy Docker
-└── README.md                   # Documentation
+├── .env.example                # Modèle des variables d'environnement
+├── .env                        # Variables réelles (Exclu par .gitignore)
+├── .gitignore                  # Protection des données sensibles
+├── nginx.conf                  # Configuration du proxy interne
+└── README.md                   # Documentation technique
 
-4. Configuration des variables d'environnement
+4. Gestion des Variables d'Environnement
 
-Par mesure de sécurité, les secrets sont stockés dans un fichier .env non versionné. Un fichier .env.example est fourni avec la structure suivante :
-Plaintext
+L'application utilise un fichier .env pour isoler les secrets. Un modèle .env.example est fourni pour le déploiement.
 
-# === BASE DE DONNÉES ===
-DB_PASSWORD=votre_mot_de_passe_fort_postgres
+Extrait du fichier .env.example :
+Bash
 
-# === DOMAINE ===
+# BASE DE DONNEES
+DB_PASSWORD=votre_mot_de_passe_postgres
+
+# DOMAINE ET SSL
 DOMAIN=23v2283.systeme-res30.app
 CERTBOT_EMAIL=votre.email@domaine.com
 
-# === SMTP ===
+# CONFIGURATION SMTP
 SMTP_SERVER=smtp.gmail.com
 SMTP_PORT=587
 SMTP_USER=votre.email@gmail.com
-SMTP_PASSWORD=votre_mot_de_passe_application_gmail
+SMTP_PASSWORD=votre_mot_de_passe_application
 
-# === ODOO ADMIN ===
-ODOO_ADMIN_PASSWORD=votre_mot_de_passe_admin_odoo
+# ADMINISTRATION ODOO
+ODOO_ADMIN_PASSWORD=votre_mot_de_passe_admin
 
-5. Persistance des données
+5. Instructions de Déploiement
+Phase 1 : Préparation
 
-Utilisation de "bind mounts" pour garantir la survie des données aux redémarrages :
+    Cloner le dépôt :
+    Bash
 
-    ./postgres_data (Base de données)
+    git clone <repository_url>
+    cd odoo-deployment
 
-    ./odoo_app/config & ./odoo_app/data (Config et fichiers Odoo)
+    Initialiser les variables :
+    Bash
 
-6. Instructions de déploiement
-1. Préparation de l'environnement
-Bash
+    cp .env.example .env
+    nano .env # Renseigner vos accès
 
-# Cloner le dépôt
-git clone <votre-depot-url>
-cd odoo-deployment
+Phase 2 : Lancement
 
-# Créer le fichier .env à partir du modèle
-cp .env.example .env
+    Démarrer l'infrastructure :
+    Bash
 
-# Éditer les variables avec vos propres valeurs
-nano .env
+    docker compose up -d
 
-2. Lancement des services
-Bash
+    Vérifier l'état des services :
+    Bash
 
-# Construire et démarrer les conteneurs en arrière-plan
-docker compose up -d
+    docker compose ps
 
-# Vérifier que tous les services sont "Up"
-docker compose ps
+Phase 3 : Configuration Réseau
 
-3. Configuration du Reverse Proxy Global
+Le Nginx système doit rediriger le port 443 vers le port 5880 en utilisant les directives proxy_pass et proxy_set_header pour maintenir l'URL propre sans affichage du port technique.
+6. Commandes de Maintenance
 
-Le Nginx du système doit être configuré pour rediriger le trafic du port 443 vers le port 5880 du projet.
-Bash
+    Logs Applicatifs : docker compose logs -f odoo
 
-sudo nano /etc/nginx/sites-available/23v2283.systeme-res30.app
-# Appliquer les changements
-sudo systemctl reload nginx
+    Redémarrage : docker compose restart odoo
 
-7. Commandes de maintenance utiles
-Bash
+    Arrêt Complet : docker compose down
 
-# Voir les logs en temps réel pour le débogage
-docker compose logs -f odoo
+    Mise à jour Config : docker compose up -d --force-recreate
 
-# Redémarrer uniquement le service applicatif
-docker compose restart odoo
+7. Analyse de Rentabilité
 
-# Arrêter tous les services proprement
-docker compose down
+    SaaS : Revenu récurrent par abonnement (50 000 - 150 000 FCFA/mois).
 
-# Forcer la reconstruction après modification du nginx.conf
-docker compose up -d --force-recreate
+    Expertise : Prestations d'intégration et formation (300 000 - 500 000 FCFA).
 
-8. Analyse de rentabilité (Business Case)
+    Optimisation : Coût infrastructure réduit (VPS) pour une marge brute estimée à 90%.
 
-    SaaS : Abonnement mensuel (50 000 - 150 000 FCFA).
+8. Validation par Captures d'écran
 
-    Intégration : Déploiement et formation (300 000 - 500 000 FCFA).
+Le dossier Capture d'ecrans/ contient les validations suivantes :
 
-    Marge brute : Très élevée (>90%) grâce à la mutualisation des ressources sur VPS.
+    config_globale.png : Preuve du masquage de port et de la configuration du proxy système.
 
-9. Captures d'écran (Preuves de succès)
+    conteneurs_actifs.png : Confirmation du statut opérationnel de tous les services Docker.
 
-Les fichiers suivants sont situés dans le dossier Capture d'ecrans/ :
+    interface_odoo.png : Preuve de l'accès final via HTTPS sécurisé sur le domaine dédié.
 
-    config_globale.png : Preuve de la configuration du Nginx système pour le masquage du port.
-
-    conteneurs_actifs.png : Capture montrant tous les services Docker fonctionnels.
-
-    interface_odoo.png : Vue d'Odoo accessible en HTTPS sur l'URL propre.
+Auteur : INF3611 - Système et Réseaux | Université de Yaoundé 1 | 2025-2026
