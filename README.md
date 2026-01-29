@@ -2,7 +2,7 @@
 ## Étudiant : DJOUTA WAMEGNE LUCIANA
 ## Matricule : 23V2283
 ## Application : Odoo (Business Suite)
-## URL : https://23V2283.system-reso3
+## URL : https://23V2283.systeme-res30.app
 
 ## 1. Description de l'application
 
@@ -49,7 +49,7 @@ Le fichier .env contient les configurations critiques pour la sécurité et le f
 
     ODOO_ADMIN_PASSWORD : Mot de passe administrateur Odoo.
 
-    DOMAIN : 23V2283.system-reso3 (sous-domaine personnel).
+    DOMAIN : 23V2283.systeme-res30 (sous-domaine personnel).
 
     CERTBOT_EMAIL : Email pour les notifications Let's Encrypt.
 
@@ -81,7 +81,7 @@ bash
 docker-compose run --rm certbot certonly \
   --webroot -w /var/www/certbot \
   --email luciana.djouta@facsciences-uy1.cm \
-  -d 23V2283.system-reso3 \
+  -d 23V2283.systeme-res30 \
   --agree-tos --non-interactive
 
 Configuration NGINX :
@@ -118,7 +118,7 @@ bash
         docker-compose run --rm certbot
 
     ## . Accéder à l'application
-        ## https://23V2283.system-reso3
+        ## https://23V2283.systeme-res30
         ## Utilisateur: admin | Mot de passe: [ODOO_ADMIN_PASSWORD]
 
 ## Commandes utiles :
@@ -181,7 +181,7 @@ Coûts d'exploitation :
     Odoo : Interface accessible, base de données fonctionnelle
     SMTP : Emails envoyés avec succès
     Persistance : Données conservées après redémarrage
-    Domaine : Accessible uniquement via https://23V2283.system-reso3
+    Domaine : Accessible uniquement via https://23V2283.systeme-res30
 
 ## Captures d'écran
 
