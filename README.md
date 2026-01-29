@@ -1,188 +1,135 @@
-## Rapport de Déploiement INF3611
-## Étudiant : DJOUTA WAMEGNE LUCIANA
-## Matricule : 23V2283
-## Application : Odoo (Business Suite)
-## URL : https://23V2283.systeme-res30.app
+Rapport de Déploiement INF3611
+Étudiant : DJOUTA WAMEGNE LUCIANA
+Matricule : 23V2283
+Application : Odoo (Business Suite)
+URL : https://23v2283.systeme-res30.app
 
-## 1. Description de l'application
+1. Description de l'application
 
-    Odoo est un Progiciel de Gestion Intégré (ERP) open-source utilisé par les entreprises pour centraliser leurs opérations. Il permet notamment la gestion des ventes, de la comptabilité, des stocks et des ressources humaines au sein d'une plateforme unique et modulaire.
+Odoo est un Progiciel de Gestion Intégré (ERP) open-source utilisé par les entreprises pour centraliser leurs opérations (ventes, comptabilité, stocks, RH).
 
-    Cas d'usage entreprise : Une PME peut remplacer ses 4-5 logiciels séparés (Excel, Sage, outils de facturation) par Odoo, centralisant toutes ses opérations avec automatisation des flux (commande → facture → stock → comptabilité).
+Cas d'usage : Automatisation complète du flux métier, de la commande client jusqu'à l'écriture comptable, sur une plateforme unique.
+2. Architecture des services
 
-## 2. Architecture des services
+Le déploiement utilise une architecture multi-conteneurs orchestrée par Docker Compose avec un rebond sur le Nginx système du VPS :
 
-Le déploiement s'appuie sur une architecture multi-conteneurs orchestrée par Docker Compose :
+    db : PostgreSQL (v15) pour le stockage des données.
 
-    db : Serveur de base de données PostgreSQL (v15) dédié au stockage des données métier.
+    odoo : Serveur d'application (Port interne : 8069).
 
-    odoo : Serveur d'application gérant la logique métier (Port exposé : 5880).
+    nginx (Docker) : Proxy interne facilitant la liaison Docker.
 
-    nginx : Serveur Web utilisé comme Reverse Proxy pour la gestion du trafic entrant et la terminaison SSL/TLS.
+    certbot : Gestionnaire de certificats SSL Let's Encrypt.
 
-    certbot : Service de génération et renouvellement automatique des certificats Let's Encrypt.
+    nginx (Système) : Reverse proxy global gérant le masquage du port 5880 et l'accès HTTPS final.
 
 Schéma de communication :
-text
+Plaintext
 
-[Utilisateur] HTTPS → [nginx:443] → [odoo:8069] ↔ [postgres:5432]
+[Utilisateur] HTTPS (443) → [Nginx Global] → [Nginx Docker (5880)] → [Odoo (8069)]
 
-## 3. Structure du projet
-text
+3. Structure du projet
+Plaintext
 
-    odoo/
-    ├── Capture d'ecrans            # dossier de capture d'ecran de l'interface odoo, en fonctionnement
-    │   ├── 1.png
-    │   ├── 2.png
-    │   └── 3.png
-    ├── docker-compose.yml          # Définition des services
-    ├── .env                        # Variables sensibles
-    ├── nginx.conf                  # Configuration du proxy
-    └── README.md                   # Documentation
+odoo/
+├── Capture d'ecrans/           # Preuves de fonctionnement (.png)
+├── docker-compose.yml          # Orchestration des services
+├── .env.example                # Modèle des variables (à versionner)
+├── .env                        # Variables réelles (EXCLU du versioning)
+├── .gitignore                  # Exclusion du fichier .env et des données
+├── nginx.conf                  # Configuration du proxy Docker
+└── README.md                   # Documentation
 
+4. Configuration des variables d'environnement
 
-## 4. Configuration des variables d'environnement
+Par mesure de sécurité, les secrets sont stockés dans un fichier .env non versionné. Un fichier .env.example est fourni avec la structure suivante :
+Plaintext
 
-Le fichier .env contient les configurations critiques pour la sécurité et le fonctionnement :
+# === BASE DE DONNÉES ===
+DB_PASSWORD=votre_mot_de_passe_fort_postgres
 
-    DB_PASSWORD : Mot de passe d'accès à la base de données PostgreSQL.
+# === DOMAINE ===
+DOMAIN=23v2283.systeme-res30.app
+CERTBOT_EMAIL=votre.email@domaine.com
 
-    ODOO_ADMIN_PASSWORD : Mot de passe administrateur Odoo.
+# === SMTP ===
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=votre.email@gmail.com
+SMTP_PASSWORD=votre_mot_de_passe_application_gmail
 
-    DOMAIN : 23V2283.systeme-res30 (sous-domaine personnel).
+# === ODOO ADMIN ===
+ODOO_ADMIN_PASSWORD=votre_mot_de_passe_admin_odoo
 
-    CERTBOT_EMAIL : Email pour les notifications Let's Encrypt.
+5. Persistance des données
 
-    Paramètres SMTP : Configuration complète pour l'envoi d'emails (serveur, port, utilisateur, mot de passe d'application).
+Utilisation de "bind mounts" pour garantir la survie des données aux redémarrages :
 
-Sécurité : Tous les secrets sont externalisés dans .env, fichier exclu du versioning.
+    ./postgres_data (Base de données)
 
-## 5. Persistance des données
+    ./odoo_app/config & ./odoo_app/data (Config et fichiers Odoo)
 
-La persistance est assurée par des "bind mounts" pour garantir l'intégrité des données :
+6. Instructions de déploiement
+1. Préparation de l'environnement
+Bash
 
-    ./postgres_data → /var/lib/postgresql/data (données PostgreSQL)
+# Cloner le dépôt
+git clone <votre-depot-url>
+cd odoo-deployment
 
-    ./odoo_app/config → /etc/odoo (configuration Odoo)
+# Créer le fichier .env à partir du modèle
+cp .env.example .env
 
-    ./odoo_app/addons → /mnt/extra-addons (modules supplémentaires)
+# Éditer les variables avec vos propres valeurs
+nano .env
 
-    ./odoo_app/data → /var/lib/odoo (documents et fichiers)
+2. Lancement des services
+Bash
 
-Avantage : Les données survivent aux redémarrages et suppressions de conteneurs.
+# Construire et démarrer les conteneurs en arrière-plan
+docker compose up -d
 
-## 6. Sécurisation HTTPS
+# Vérifier que tous les services sont "Up"
+docker compose ps
 
-Le certificat TLS a été généré via Let's Encrypt avec Certbot intégré à Docker Compose.
+3. Configuration du Reverse Proxy Global
 
-Commande d'exécution :
-bash
+Le Nginx du système doit être configuré pour rediriger le trafic du port 443 vers le port 5880 du projet.
+Bash
 
-docker-compose run --rm certbot certonly \
-  --webroot -w /var/www/certbot \
-  --email luciana.djouta@facsciences-uy1.cm \
-  -d 23V2283.systeme-res30 \
-  --agree-tos --non-interactive
+sudo nano /etc/nginx/sites-available/23v2283.systeme-res30.app
+# Appliquer les changements
+sudo systemctl reload nginx
 
-Configuration NGINX :
+7. Commandes de maintenance utiles
+Bash
 
-    Redirection automatique HTTP → HTTPS
+# Voir les logs en temps réel pour le débogage
+docker compose logs -f odoo
 
-    Renouvellement automatique des certificats (cron intégré)
+# Redémarrer uniquement le service applicatif
+docker compose restart odoo
 
-    Headers de sécurité (HSTS, X-Frame-Options, etc.)
+# Arrêter tous les services proprement
+docker compose down
 
-## 7. Configuration SMTP
+# Forcer la reconstruction après modification du nginx.conf
+docker compose up -d --force-recreate
 
-Pour les emails transactionnels (factures, réinitialisations de mots de passe) :
+8. Analyse de rentabilité (Business Case)
 
-    Serveur : smtp.gmail.com:587 avec TLS
+    SaaS : Abonnement mensuel (50 000 - 150 000 FCFA).
 
-    Authentification : Mot de passe d'application Google (validation en 2 étapes requise)
+    Intégration : Déploiement et formation (300 000 - 500 000 FCFA).
 
-    Test : Envoi d'email de test fonctionnel depuis l'interface Odoo
+    Marge brute : Très élevée (>90%) grâce à la mutualisation des ressources sur VPS.
 
-## 8. Instructions de déploiement
-bash
+9. Captures d'écran (Preuves de succès)
 
-    ## . Cloner et configurer
-        git clone <repository>
-        cd odoo-deployment
-        cp .env.example .env
-    ## . Éditer .env avec vos valeurs
+Les fichiers suivants sont situés dans le dossier Capture d'ecrans/ :
 
-    ## . Démarrer les services
-        docker-compose up -d
+    config_globale.png : Preuve de la configuration du Nginx système pour le masquage du port.
 
-    ## . Générer le certificat SSL
-        docker-compose run --rm certbot
+    conteneurs_actifs.png : Capture montrant tous les services Docker fonctionnels.
 
-    ## . Accéder à l'application
-        ## https://23V2283.systeme-res30
-        ## Utilisateur: admin | Mot de passe: [ODOO_ADMIN_PASSWORD]
-
-## Commandes utiles :
-bash
-
-    docker-compose logs -f odoo      # Voir les logs
-    docker-compose restart odoo      # Redémarrer Odoo
-    docker-compose run --rm certbot renew  # Renouveler certificat
-
-## 9. Analyse de rentabilité (Business Case)
-Modèles de monétisation :
-
-    SaaS (Software as a Service)
-
-        Abonnement mensuel : 50 000 - 150 000 FCFA/PME
-
-        Inclut : hébergement, maintenance, sauvegardes, support
-
-    Services d'intégration
-
-        Installation sur mesure : 300 000 - 500 000 FCFA
-
-        Migration depuis Excel/Sage : 200 000 - 400 000 FCFA
-
-        Formation utilisateurs : 75 000 FCFA/jour/personne
-
-    Développement sur mesure
-
-        Modules personnalisés : 200 000 - 1 000 000 FCFA/module
-
-        Interfaces mobiles : 500 000 - 1 500 000 FCFA
-
-    Maintenance et support
-
-        Forfait mensuel : 25 000 - 50 000 FCFA/mois
-
-        Interventions ponctuelles : 15 000 FCFA/heure
-
-Projection de revenus :
-
-    10 clients SaaS à 75 000 FCFA/mois = 750 000 FCFA/mois
-
-    2 installations/mois à 400 000 FCFA = 800 000 FCFA/mois
-
-    4 formations/mois à 150 000 FCFA = 600 000 FCFA/mois
-
-    Total mensuel potentiel : 2 150 000 FCFA
-
-Coûts d'exploitation :
-
-    VPS : 15 000 FCFA/mois
-
-    Domaines : 2 000 FCFA/mois
-
-    Marge brute : ~99%
-
-## 10. Validation et tests
-
-    HTTPS : Certificat valide, accès sécurisé
-    Odoo : Interface accessible, base de données fonctionnelle
-    SMTP : Emails envoyés avec succès
-    Persistance : Données conservées après redémarrage
-    Domaine : Accessible uniquement via https://23V2283.systeme-res30
-
-## Captures d'écran
-
-    Les captures d'écran de l'interface Odoo fonctionnelle sont disponibles dans le dossier `Capture d'ecrans/` 
+    interface_odoo.png : Vue d'Odoo accessible en HTTPS sur l'URL propre.
