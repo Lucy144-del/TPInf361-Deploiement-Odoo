@@ -1,10 +1,10 @@
-# version: '3.8'
+version: '3.8'
 
 services:
-  # 1. LA BASE DE DONNÉES (PostgreSQL)
+  # 1. BASE DE DONNÉES
   db:
     image: postgres:15
-    container_name: odoo_db
+    container_name: odoo_db_23V2283  # Nom unique pour éviter les conflits
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=odoo
@@ -15,17 +15,16 @@ services:
       - odoo_network
     restart: unless-stopped
 
-  # 2. L'APPLICATION ODOO
+  # 2. APPLICATION ODOO
   odoo:
     image: odoo:17
-    container_name: odoo_app
+    container_name: odoo_app_23V2283 # Nom unique
     depends_on:
       - db
     environment:
       - HOST=db
       - USER=odoo
       - PASSWORD=${DB_PASSWORD}
-      # Configuration SMTP POUR ODOO :
       - EMAIL_HOST=${SMTP_SERVER}
       - EMAIL_PORT=${SMTP_PORT}
       - EMAIL_HOST_USER=${SMTP_USER}
@@ -35,16 +34,14 @@ services:
       - ./odoo_app/config:/etc/odoo
       - ./odoo_app/addons:/mnt/extra-addons
       - ./odoo_app/data:/var/lib/odoo
-    ports:
-      - "5880:8069"  # Port 5880 sur le serveur → Port 8069 dans Odoo
     networks:
       - odoo_network
     restart: unless-stopped
 
-  # 3. LE PROXY NGINX (pour HTTPS)
+  # 3. PROXY NGINX
   nginx:
     image: nginx:alpine
-    container_name: odoo_nginx
+    container_name: odoo_nginx_23V2283 # Nom unique
     depends_on:
       - odoo
     volumes:
@@ -52,16 +49,17 @@ services:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/nginx/ssl
     ports:
-      - "80:80"      # HTTP
-      - "443:443"    # HTTPS
+      # On mappe le port 5880 vers le port 80 de Nginx
+      # Pour le HTTPS, vu que qu'on a qu'un port, on restera sur le 5880
+      - "5880:80" 
     networks:
       - odoo_network
     restart: unless-stopped
 
-  # 4. CERTBOT (pour le certificat SSL)
+  # 4. CERTBOT
   certbot:
     image: certbot/certbot
-    container_name: odoo_certbot
+    container_name: odoo_certbot_23V2283
     volumes:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
@@ -69,7 +67,6 @@ services:
     networks:
       - odoo_network
 
-# LE RÉSEAU COMMUN
 networks:
   odoo_network:
-    driver: bridge
+    name: odoo_network_23V2283 # Réseau unique pour ne pas mélanger avec l'autre étudiant
